@@ -1,0 +1,70 @@
+name: Publish to npm
+
+# Runs in livialink/jovepay-react-checkout (synced from the monorepo).
+# Publishes when package.json version is new; skips if already on npm.
+#
+# Auth: npm Trusted Publishing (OIDC) — no NPM_TOKEN.
+# One-time setup: https://www.npmjs.com/package/jovepay-react-checkout
+#   → Settings → Trusted Publisher → GitHub Actions
+#   Organization: livialink
+#   Repository: jovepay-react-checkout
+#   Workflow filename: publish.yml
+#   Allowed actions: npm publish
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: publish-npm-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write # OIDC for Trusted Publishing + provenance
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Trusted Publishing needs Node ≥ 22.14 and npm ≥ 11.5.1
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Ensure npm supports Trusted Publishing
+        run: npm install -g npm@latest
+
+      - name: Read package identity
+        id: pkg
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Publishing candidate: $NAME@$VERSION"
+          echo "npm $(npm --version) / node $(node --version)"
+
+      - name: Check if version already exists on npm
+        id: check
+        run: |
+          if npm view "${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }}" version >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Version ${{ steps.pkg.outputs.version }} is already on npm — skipping publish."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Version ${{ steps.pkg.outputs.version }} is not on npm — will publish."
+          fi
+
+      # Do NOT set NODE_AUTH_TOKEN — an invalid/classic token triggers E403
+      # (2FA / granular bypass) instead of using OIDC Trusted Publishing.
+      - name: Publish with Trusted Publishing (OIDC)
+        if: steps.check.outputs.exists == 'false'
+        run: npm publish --access public --provenance
