@@ -11,7 +11,7 @@ name: Publish to npm
 #   once (token), then attach Trusted Publisher, then use this workflow.
 #
 # Trusted Publisher (after the package exists):
-#   https://www.npmjs.com/package/jovepay-react-checkout → Settings
+#   https://www.npmjs.com/package/@jovepay/react-checkout → Settings
 #   Organization: livialink
 #   Repository: jovepay-react-checkout
 #   Workflow filename: publish.yml
