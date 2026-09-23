@@ -1,0 +1,59 @@
+name: Bootstrap npm package (one-time)
+
+# One-time first publish. npm Trusted Publishing (OIDC) cannot create a brand-new
+# package — the name must already exist on the registry before you can attach a
+# Trusted Publisher. See https://github.com/npm/cli/issues/8544
+#
+# After this succeeds:
+#   1. Open https://www.npmjs.com/package/jovepay-react-checkout → Settings
+#   2. Trusted Publisher → GitHub Actions
+#        Organization: livialink
+#        Repository: jovepay-react-checkout
+#        Workflow filename: publish.yml
+#        Allowed actions: include npm publish
+#   3. Disable / delete this workflow (or leave unused)
+#   4. Future releases use publish.yml (OIDC, no token)
+#
+# Secret required: NPM_TOKEN — granular access token with:
+#   - Packages: Read and write
+#   - "Bypass two-factor authentication" enabled (automation)
+#   - Permission to publish / create packages on your account or org
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bootstrap-npm
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    name: First publish with token
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Guard — refuse if package already exists
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME" name >/dev/null 2>&1; then
+            echo "::error::$NAME already exists on npm. Configure Trusted Publisher and use publish.yml instead."
+            exit 1
+          fi
+          echo "Bootstrapping $NAME@$VERSION (package does not exist yet)"
+
+      # Token publish cannot attach OIDC provenance; first OIDC publish later will.
+      - name: Publish initial version
+        run: npm publish --access public --provenance=false
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

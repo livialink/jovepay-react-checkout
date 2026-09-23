@@ -1,4 +1,4 @@
-# jovepay-react-checkout
+# @jovepay/react-checkout
 
 React hook for [JOVEpay](https://www.jovepay.com) in-page checkout.
 
@@ -14,11 +14,11 @@ other React setups.
 ## Install
 
 ```bash
-npm install jovepay-react-checkout
+npm install @jovepay/react-checkout
 # or
-pnpm add jovepay-react-checkout
+pnpm add @jovepay/react-checkout
 # or
-yarn add jovepay-react-checkout
+yarn add @jovepay/react-checkout
 ```
 
 **Peer dependency:** `react` ≥ 16.8.0
@@ -28,7 +28,7 @@ yarn add jovepay-react-checkout
 ## Quick start
 
 ```tsx
-import { useJovepay } from 'jovepay-react-checkout';
+import { useJovepay } from '@jovepay/react-checkout';
 
 export function PayButton({ invoiceId }: { invoiceId: string }) {
   const { open, isReady, error } = useJovepay({
@@ -128,7 +128,7 @@ Mount into a page slot instead of a fullscreen modal:
 
 ```tsx
 import { useEffect, useRef } from 'react';
-import { useJovepay } from 'jovepay-react-checkout';
+import { useJovepay } from '@jovepay/react-checkout';
 
 export function InlineCheckout({ invoiceId }: { invoiceId: string }) {
   const slotRef = useRef<HTMLDivElement>(null);
@@ -224,7 +224,7 @@ If you need the script status without opening checkout, or want to override the
 CDN URL (pinned commit, self-hosted build):
 
 ```ts
-import { useJovePayScript, JOVEPAY_WEBPAY_CDN } from 'jovepay-react-checkout';
+import { useJovePayScript, JOVEPAY_WEBPAY_CDN } from '@jovepay/react-checkout';
 
 const [loaded, error] = useJovePayScript();
 
@@ -250,7 +250,7 @@ import type {
   JovePayCheckoutOptions,
   JovePayCheckoutInstance,
   CloseReason,
-} from 'jovepay-react-checkout';
+} from '@jovepay/react-checkout';
 ```
 
 ---
@@ -265,7 +265,7 @@ Call the hook only in **Client Components** (`'use client'`). The SDK needs
 ```tsx
 'use client';
 
-import { useJovepay } from 'jovepay-react-checkout';
+import { useJovepay } from '@jovepay/react-checkout';
 // ...
 ```
 

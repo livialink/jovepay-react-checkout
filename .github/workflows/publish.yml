@@ -4,12 +4,18 @@ name: Publish to npm
 # Publishes when package.json version is new; skips if already on npm.
 #
 # Auth: npm Trusted Publishing (OIDC) — no NPM_TOKEN.
-# One-time setup: https://www.npmjs.com/package/jovepay-react-checkout
-#   → Settings → Trusted Publisher → GitHub Actions
+#
+# IMPORTANT — first publish / E404:
+#   OIDC cannot create a new package name. If you see
+#   "404 Not Found - PUT …/jovepay-react-checkout", run bootstrap-npm.yml
+#   once (token), then attach Trusted Publisher, then use this workflow.
+#
+# Trusted Publisher (after the package exists):
+#   https://www.npmjs.com/package/jovepay-react-checkout → Settings
 #   Organization: livialink
 #   Repository: jovepay-react-checkout
 #   Workflow filename: publish.yml
-#   Allowed actions: npm publish
+#   Allowed actions: include npm publish
 on:
   push:
     branches:
